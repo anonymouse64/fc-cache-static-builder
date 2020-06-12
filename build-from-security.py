@@ -31,10 +31,12 @@ deb-src {base_uri} {dist} main
 deb {base_uri} {dist}-security main
 deb-src {base_uri} {dist}-security main
         """.format(base_uri=base_uri, dist=release))
-
+        
         # copy keys in place
-        shutil.copy2("/etc/apt/trusted.gpg", base+"/etc/apt/trusted.gpg")
-        shutil.copytree("/etc/apt/trusted.gpg.d", base+"/etc/apt/trusted.gpg.d")
+        if os.path.isfile("/etc/apt/trusted.gpg"):
+            shutil.copy2("/etc/apt/trusted.gpg", base+"/etc/apt/trusted.gpg")
+        if os.path.isdir("/etc/apt/trusted.gpg.d"):
+            shutil.copytree("/etc/apt/trusted.gpg.d", base+"/etc/apt/trusted.gpg.d")
         # and create/update cache
         cache = apt.Cache(rootdir=base)
         cache.update(apt.progress.text.AcquireProgress())
@@ -59,10 +61,10 @@ def build_fontconfig(release):
             shutil.copy(p, os.path.join(pkgsrcdir, "debian", "patches"))
             subprocess.call("echo {} >> {}/debian/patches/series".format(os.path.basename(p), pkgsrcdir), shell=True)
     # do the normal build first
-    try:
-        subprocess.check_call(["sudo", "apt-get", "-y", "build-dep", pkgsrcdir])
-    except:
-        pass
+    # try:
+    subprocess.check_call(["sudo", "apt-get", "-y", "build-dep", pkgsrcdir])
+    # except:
+    #     pass
     subprocess.check_call(["dpkg-buildpackage", "-uc", "-us", "-Zgzip"], cwd=pkgsrcdir)
     triplet=subprocess.check_output(["dpkg-architecture", "-qDEB_HOST_MULTIARCH"]).decode().strip()
     # then use this to get the static build
