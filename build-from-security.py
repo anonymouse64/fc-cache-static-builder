@@ -68,7 +68,11 @@ def build_fontconfig(release):
     subprocess.check_call(["dpkg-buildpackage", "-uc", "-us", "-Zgzip","-d"], cwd=pkgsrcdir)
     triplet=subprocess.check_output(["dpkg-architecture", "-qDEB_HOST_MULTIARCH"]).decode().strip()
     # then use this to get the static build
-    subprocess.check_output("../libtool  --tag=CC   --mode=link gcc   -g -O2 -pthread   -o fc-cache fc-cache.o ../src/.libs/libfontconfig.a /usr/lib/{triplet}/libfreetype.a /usr/lib/{triplet}/libexpat.a /usr/lib/{triplet}/libpng.a -lz -lm".format(triplet=triplet), shell=True, cwd=os.path.join(pkgsrcdir, "fc-cache"))
+    if release is "focal":
+        subprocess.check_output("../libtool  --tag=CC   --mode=link gcc   -g -O2 -pthread   -o fc-cache fc-cache.o ../src/.libs/libfontconfig.a /usr/lib/{triplet}/libfreetype.a /usr/lib/{triplet}/libexpat.a /usr/lib/{triplet}/libpng.a -lz -lm -luuid".format(triplet=triplet), shell=True, cwd=os.path.join(pkgsrcdir, "fc-cache"))
+    else:
+        subprocess.check_output("../libtool  --tag=CC   --mode=link gcc   -g -O2 -pthread   -o fc-cache fc-cache.o ../src/.libs/libfontconfig.a /usr/lib/{triplet}/libfreetype.a /usr/lib/{triplet}/libexpat.a /usr/lib/{triplet}/libpng.a -lz -lm".format(triplet=triplet), shell=True, cwd=os.path.join(pkgsrcdir, "fc-cache"))
+    
     target_fc_cache="./fc-cache-{}".format(release)
     shutil.copy(os.path.join(pkgsrcdir, "fc-cache/fc-cache"), target_fc_cache)
     return target_fc_cache
