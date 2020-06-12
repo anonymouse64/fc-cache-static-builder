@@ -59,7 +59,10 @@ def build_fontconfig(release):
             shutil.copy(p, os.path.join(pkgsrcdir, "debian", "patches"))
             subprocess.call("echo {} >> {}/debian/patches/series".format(os.path.basename(p), pkgsrcdir), shell=True)
     # do the normal build first
-    subprocess.check_call(["sudo", "apt-get", "-y", "build-dep", pkgsrcdir])
+    try:
+        subprocess.check_call(["sudo", "apt-get", "-y", "build-dep", pkgsrcdir])
+    except:
+        pass
     subprocess.check_call(["dpkg-buildpackage", "-uc", "-us", "-Zgzip"], cwd=pkgsrcdir)
     triplet=subprocess.check_output(["dpkg-architecture", "-qDEB_HOST_MULTIARCH"]).decode().strip()
     # then use this to get the static build
